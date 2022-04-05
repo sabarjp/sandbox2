@@ -115,17 +115,19 @@ fun startReportsLookupProcess(num: Int) = reportsScope.launch {
     }
 }
 
-suspend fun buildReport(num: Int) {
+suspend fun buildReport(num: Int): List<Int> {
     // NOTE: kotlin map does **not** run in parallel; each item is done
     // sequentially.
     val rand = Random.nextInt() * 16
 
-    (1..rand).map {
+    return (1..rand).map {
         //println("building report for $num ->> $it")
 
         // simulate results depending on each other
         val a = apiCall1()
         val b = apiCall2(a, num)
+
+        b
     }
 }
 
