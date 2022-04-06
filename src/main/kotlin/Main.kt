@@ -43,7 +43,7 @@ suspend fun monitor(start: Long) = logScope.launch {
     while (true) {
         val ping = System.currentTimeMillis()
 
-        delay(1000L);
+        delay(100);
 
 
         val queue1 = (reportsDispatcher.asLimitedDispatcher()).queue();
@@ -54,9 +54,7 @@ suspend fun monitor(start: Long) = logScope.launch {
         val workers3 = (apiDispatcher.asLimitedDispatcher()).runningWorkers();
 
         // NOTE: the timing here is to see if our thread is being delayed in the timing
-        println("${System.currentTimeMillis() - ping} #### reports: ${workers1} / ${queue1?.size}")
-        println("${System.currentTimeMillis() - ping} ####     dao: ${workers2} / ${queue2?.size}")
-        println("${System.currentTimeMillis() - ping} ####    apis: ${workers3} / ${queue3?.size}")
+        print("${System.currentTimeMillis() - ping} #### reports: ${workers1} / ${queue1?.size}     dao: ${workers2} / ${queue2?.size}    apis: ${workers3} / ${queue3?.size}\r")
     }
 }
 
@@ -118,7 +116,7 @@ fun startReportsLookupProcess(num: Int) = reportsScope.launch {
 suspend fun buildReport(num: Int): List<Int> {
     // NOTE: kotlin map does **not** run in parallel; each item is done
     // sequentially.
-    val rand = Random.nextInt() * 16
+    val rand = 2 + (Random.nextInt(16))
 
     return (1..rand).map {
         //println("building report for $num ->> $it")
@@ -133,9 +131,12 @@ suspend fun buildReport(num: Int): List<Int> {
 
 // simple call, just does one thing and returns
 suspend fun apiCall1(param: Int = 0): Int = withContext(apiDispatcher) {
+    // our retrofit uses the synchronous execute function, not enqueue, so we
+    // can't do any async action here in the simulation.
     val start = System.currentTimeMillis();
     while(System.currentTimeMillis() < start + 300L) {
         // busy wait
+        Thread.sleep(50)
     }
     
     return@withContext 2
@@ -158,9 +159,12 @@ suspend fun apiCall2(param: Int = 0, num: Int): Int = withContext(apiDispatcher)
 }
 
 suspend fun apiCall3(param: Int = 0): Int = withContext(apiDispatcher) {
+    // our retrofit uses the synchronous execute function, not enqueue, so we
+    // can't do any async action here in the simulation.
     val start = System.currentTimeMillis();
     while(System.currentTimeMillis() < start + 300L) {
         // busy wait
+        Thread.sleep(50)
     }
 
     return@withContext 2
